@@ -46,6 +46,12 @@ namespace Player
         {
             _isTouchingLayer = _collider.IsTouchingLayers(_groundLayer);
         }
+
+        private void OnDrawGizmos()
+        {
+            Gizmos.color = GetIsGrounded() ? Color.green : Color.red;
+            Gizmos.DrawSphere(transform.position , 0.3f);
+        }
     }
 }
 
