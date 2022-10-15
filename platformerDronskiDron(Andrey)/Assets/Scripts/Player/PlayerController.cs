@@ -48,7 +48,7 @@ namespace Player
             if (_playerJumpChecker.GetIsJumping())
             {
 
-                if (_playerJumpChecker.GetIsGrounded())
+                if (_playerJumpChecker.GetIsGrounded() && _rigidbody.velocity.y <= 0.01f)
                 {
                     _rigidbody.AddForce(Vector2.up * _jumpForce, ForceMode2D.Impulse);
                 }

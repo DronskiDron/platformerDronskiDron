@@ -53,6 +53,9 @@ TagManager:
   - name: Props
     uniqueID: 67117627
     locked: 0
-  - name: Character
+  - name: Creatures
     uniqueID: 3274515171
+    locked: 0
+  - name: Grass
+    uniqueID: 250578295
     locked: 0
