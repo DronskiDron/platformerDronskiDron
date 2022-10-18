@@ -8,7 +8,7 @@ namespace BackGround
         [SerializeField] private float _damping = 15f;
 
 
-        private void Awake()
+        private void Start()
         {
             SetObjectStartPosition();
         }

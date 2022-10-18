@@ -10,18 +10,29 @@ namespace Player
 
         private Rigidbody2D _rigidbody;
         private Vector2 _moveDirection;
+        private Animator _animator;
+        private SpriteRenderer _sprite;
+
+        private static readonly int _isRunning = Animator.StringToHash("is-Running");
+        private static readonly int _isGround = Animator.StringToHash("is-Ground");
+        private static readonly int _verticalVelocity = Animator.StringToHash("vertical-Velocity");
 
 
         private void Awake()
         {
             _rigidbody = GetComponent<Rigidbody2D>();
+            _animator = GetComponent<Animator>();
+            _sprite = GetComponent<SpriteRenderer>();
         }
 
 
         private void FixedUpdate()
         {
             PlayerMover();
+
             PlayerJumper();
+
+            AniimationSwitcher();
         }
 
 
@@ -56,6 +67,23 @@ namespace Player
             else if (_rigidbody.velocity.y > 0)
             {
                 _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, _rigidbody.velocity.y * 0.5f);
+            }
+        }
+
+
+        private void AniimationSwitcher()
+        {
+            _animator.SetBool(_isRunning, _moveDirection.x != 0);
+            _animator.SetBool(_isGround, _playerJumpChecker.GetIsGrounded());
+            _animator.SetFloat(_verticalVelocity, _rigidbody.velocity.y);
+
+            if (_moveDirection.x > 0)
+            {
+                _sprite.flipX = false;
+            }
+            else if (_moveDirection.x < 0)
+            {
+                _sprite.flipX = true;
             }
         }
 
