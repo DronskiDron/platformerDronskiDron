@@ -29,6 +29,7 @@ namespace General
             StartAnimation();
         }
 
+
         private void OnBecameVisible()
         {
             enabled = _isPlaying;

@@ -16,16 +16,23 @@ namespace Player
             _player.SetMoveDirection(direction);
         }
 
+
         private void OnJumping(InputValue context)
         {
             var jumpVector = context.Get<Vector2>();
-            _playerJumpChecker.SetIsJumping(jumpVector);
+            _playerJumpChecker.SetIsPressingJump(jumpVector);
         }
 
 
         private void OnSayingSomething(InputValue context)
         {
             _player.SaySomething();
+        }
+
+
+        private void OnInteract(InputValue context)
+        {
+            _player.Interact();
         }
     }
 }

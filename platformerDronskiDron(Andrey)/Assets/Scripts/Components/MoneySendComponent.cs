@@ -8,15 +8,10 @@ namespace General.Components
         [SerializeField] private CoinCounter _coincounter;
         [SerializeField] private float _coinCost = 1f;
 
+
         public void SendMoney()
         {
             _coincounter.GetMoney(_coinCost);
-        }
-
-
-        public void ConsoleMessage()
-        {
-            _coincounter.MoneyConsoleWriter();
         }
     }
 }

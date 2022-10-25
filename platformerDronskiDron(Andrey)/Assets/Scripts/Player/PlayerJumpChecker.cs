@@ -6,9 +6,11 @@ namespace Player
     {
         [SerializeField] private LayerMask _groundLayer;
         [SerializeField] private Collider2D _collider;
+        [SerializeField] private float _drawSphereRadius = 0.3f;
 
-        private bool _isJumping;
+        private bool _isPressingJump;
         private bool _isTouchingLayer;
+
 
         private void Awake()
         {
@@ -16,15 +18,15 @@ namespace Player
         }
 
 
-        public void SetIsJumping(Vector2 jumpVector)
+        public void SetIsPressingJump(Vector2 jumpVector)
         {
-            _isJumping = jumpVector.y > 0;
+            _isPressingJump = jumpVector.y > 0;
         }
 
 
-        public bool GetIsJumping()
+        public bool GetIsPressingJump()
         {
-            return _isJumping;
+            return _isPressingJump;
         }
 
 
@@ -45,10 +47,11 @@ namespace Player
             _isTouchingLayer = _collider.IsTouchingLayers(_groundLayer);
         }
 
+
         private void OnDrawGizmos()
         {
             Gizmos.color = GetIsGrounded() ? Color.green : Color.red;
-            Gizmos.DrawSphere(transform.position , 0.3f);
+            Gizmos.DrawSphere(transform.position, _drawSphereRadius);
         }
     }
 }

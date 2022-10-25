@@ -16,6 +16,5 @@ namespace General.Components
                 _action?.Invoke();
             }
         }
-
     }
 }

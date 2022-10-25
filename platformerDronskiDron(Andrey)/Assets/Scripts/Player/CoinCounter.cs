@@ -6,9 +6,11 @@ namespace Player
     {
         private float _money;
 
+
         public void GetMoney(float moneyFromObjects)
         {
             _money += moneyFromObjects;
+            MoneyConsoleWriter();
         }
 
 
