@@ -1,5 +1,6 @@
-﻿using General.Components;
-using UnityEngine;
+﻿using UnityEngine;
+using General.Components;
+using System.Diagnostics;
 
 namespace Player
 {
@@ -11,14 +12,25 @@ namespace Player
         [SerializeField] private float _damageJumpForce = 10;
         [SerializeField] private float _interactionRadius = 5;
         [SerializeField] private LayerMask _interactionLayer;
+        [SerializeField] private SpawnComponent _footStepParticles;
+        [SerializeField] private SpawnComponent _jumpDustParticles;
+        [SerializeField] private SpawnComponent _landingDustParticles;
+        [SerializeField] private ParticleSystem _hitParticles;
+        [SerializeField] private CoinCounter _coinCounter;
 
+        const float BASE_FALLING_TIME = 500f;
         private Collider2D[] _interactionResult = new Collider2D[1];
         private Rigidbody2D _rigidbody;
         private Vector2 _moveDirection;
         private Animator _animator;
-        private SpriteRenderer _sprite;
         private bool _isGrounded;
         private bool _allowDoubleJump;
+        private bool _isJumping;
+        private bool _isHardLanding = false;
+        private Stopwatch _watch = new Stopwatch();
+        private bool _isFallTimerStarted = false;
+        private bool _doubleJumpWasUsed = false;
+
 
         private static readonly int IsRunning = Animator.StringToHash("is-Running");
         private static readonly int IsGround = Animator.StringToHash("is-Ground");
@@ -31,7 +43,6 @@ namespace Player
         {
             _rigidbody = GetComponent<Rigidbody2D>();
             _animator = GetComponent<Animator>();
-            _sprite = GetComponent<SpriteRenderer>();
         }
 
 
@@ -63,7 +74,7 @@ namespace Player
 
         public void SaySomething()
         {
-            Debug.Log("ПАЛУНДРА!!!");
+            UnityEngine.Debug.Log("ПАЛУНДРА!!!");
         }
 
 
@@ -72,6 +83,7 @@ namespace Player
             var xVelocity = _moveDirection.x * _speed;
             var yVelocity = CalculateVelocity();
             _rigidbody.velocity = new Vector2(xVelocity, yVelocity);
+            LongFalling();
         }
 
 
@@ -80,13 +92,18 @@ namespace Player
             var yVelocity = _rigidbody.velocity.y;
             var isJumpPressing = _playerJumpChecker.GetIsPressingJump();
 
-            if (_isGrounded) _allowDoubleJump = true;
+            if (_isGrounded)
+            {
+                _allowDoubleJump = true;
+                _isJumping = false;
+            }
 
             if (isJumpPressing)
             {
+                _isJumping = true;
                 yVelocity = CalculateJumpVelocity(yVelocity);
             }
-            else if (_rigidbody.velocity.y > 0)
+            else if (_rigidbody.velocity.y > 0 && _isJumping)
             {
                 yVelocity *= 0.5f;
             }
@@ -107,6 +124,9 @@ namespace Player
             }
             else if (_allowDoubleJump)
             {
+                SpawnJumpDust();
+                _isHardLanding = true;
+                _doubleJumpWasUsed = true;
                 yVelocity = _jumpForce;
                 _allowDoubleJump = false;
             }
@@ -123,19 +143,38 @@ namespace Player
 
             if (_moveDirection.x > 0)
             {
-                _sprite.flipX = false;
+                transform.localScale = Vector3.one;
             }
             else if (_moveDirection.x < 0)
             {
-                _sprite.flipX = true;
+                transform.localScale = new Vector3(-1, 1, 1);
             }
         }
 
 
         public void TakeDamage()
         {
+            _isJumping = false;
             _animator.SetTrigger(Hit);
             _rigidbody.velocity = new Vector2(_rigidbody.velocity.x, _damageJumpForce);
+
+            if (_coinCounter.Money > 0)
+            {
+                SpawnCoins();
+            }
+        }
+
+
+        private void SpawnCoins()
+        {
+            var numCoinsToDespose = Mathf.Min(_coinCounter.Money, 5);
+            _coinCounter.GetMoney(-numCoinsToDespose);
+
+            var burst = _hitParticles.emission.GetBurst(0);
+            burst.count = numCoinsToDespose;
+            _hitParticles.emission.SetBurst(0, burst);
+            _hitParticles.gameObject.SetActive(true);
+            _hitParticles.Play();
         }
 
 
@@ -158,6 +197,63 @@ namespace Player
                 var interactable = _interactionResult[i].GetComponent<InteractableComponent>();
                 interactable?.Interact();
             }
+        }
+
+
+        public void SpawnFootDust()
+        {
+            _footStepParticles.Spawn();
+        }
+
+
+        public void SpawnJumpDust()
+        {
+            if (_allowDoubleJump || _isGrounded)
+            {
+                _jumpDustParticles.Spawn();
+            }
+        }
+
+
+        public void SpawnLandingDust()
+        {
+            if (_isHardLanding && _isGrounded)
+            {
+                _landingDustParticles.Spawn();
+            }
+            _isHardLanding = false;
+        }
+
+
+        private void LongFalling()
+        {
+            var yVelocity = _rigidbody.velocity.y;
+
+            if (yVelocity < 0 && !_isFallTimerStarted)
+            {
+                _watch.Start();
+                _isFallTimerStarted = true;
+            }
+            else if (yVelocity >= 0 && _isFallTimerStarted)
+            {
+                _watch.Stop();
+                FallingTimeChecker();
+                _isFallTimerStarted = false;
+            }
+        }
+
+
+        public void FallingTimeChecker()
+        {
+            var timeSpan = _watch.ElapsedMilliseconds;
+
+            if (timeSpan >= BASE_FALLING_TIME && !_doubleJumpWasUsed)
+            {
+                _isHardLanding = true;
+            }
+
+            _watch.Reset();
+            _doubleJumpWasUsed = false;
         }
     }
 }

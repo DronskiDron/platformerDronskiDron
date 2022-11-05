@@ -1,5 +1,4 @@
-﻿
-using System.Reflection;
+﻿using System.Reflection;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,6 +13,7 @@ namespace General.Components
             SceneManager.LoadScene(scene.name);
             ClearLog();
         }
+
 
         public void ClearLog()
         {
